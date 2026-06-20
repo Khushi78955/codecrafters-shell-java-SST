@@ -8,6 +8,22 @@ public class Main {
     private static File currentDirectory = new File(System.getProperty("user.dir"));
     private static int nextJobNumber = 1;
 
+    private static class Job {
+        int jobNumber;
+        long pid;
+        String command;
+        Process process;
+
+        Job(int jobNumber, long pid, String command, Process process) {
+            this.jobNumber = jobNumber;
+            this.pid = pid;
+            this.command = command;
+            this.process = process;
+        }
+    }
+
+    private static List<Job> jobs = new ArrayList<>();
+
     private static List<String> parseCommand(String input) {
         List<String> parts = new ArrayList<>();
         StringBuilder current = new StringBuilder();
@@ -124,7 +140,18 @@ public class Main {
                 }
 
             } else if (command.equals("jobs")) {
-                // empty implementation
+
+                for (Job job : jobs) {
+
+                    if (job.process.isAlive()) {
+
+                        System.out.printf(
+                                "[%d]+  %-24s%s%n",
+                                job.jobNumber,
+                                "Running",
+                                job.command);
+                    }
+                }
             } else if (command.equals("echo")) {
 
                 int stdoutRedirect = -1;
@@ -349,9 +376,14 @@ public class Main {
 
                     if (backgroundJob) {
 
-                        System.out.println(
-                                "[" + nextJobNumber + "] "
-                                        + process.pid());
+                        System.out.println("[" + nextJobNumber + "] " + process.pid());
+
+                        jobs.add(
+                                new Job(
+                                        nextJobNumber,
+                                        process.pid(),
+                                        input,
+                                        process));
 
                         nextJobNumber++;
 
