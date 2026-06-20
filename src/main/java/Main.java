@@ -1,4 +1,5 @@
 import java.util.Scanner;
+import java.io.File;
 
 public class Main {
     public static void main(String[] args) throws Exception {
@@ -22,7 +23,24 @@ public class Main {
 
                     System.out.println(command + " is a shell builtin");
                 } else {
-                    System.out.println(command + ": not found");
+                    String pathEnv = System.getenv("PATH");
+                    String[] paths = pathEnv.split(File.pathSeparator);
+
+                    boolean found = false;
+
+                    for (String path : paths) {
+                        File file = new File(path, command);
+
+                        if (file.exists() && file.canExecute()) {
+                            System.out.println(command + " is " + file.getAbsolutePath());
+                            found = true;
+                            break;
+                        }
+                    }
+
+                    if (!found) {
+                        System.out.println(command + ": not found");
+                    }
                 }
             } else {
                 System.out.println(input + ": command not found");
