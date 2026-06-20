@@ -1,5 +1,6 @@
 import java.util.Scanner;
 import java.io.File;
+import java.nio.file.Paths;
 
 public class Main {
     public static void main(String[] args) throws Exception {
@@ -12,6 +13,9 @@ public class Main {
 
             if (input.equals("exit")) {
                 break;
+            } else if (input.equals("pwd")) {
+                System.out.println(Paths.get("").toAbsolutePath().normalize());
+
             } else if (input.startsWith("echo ")) {
                 System.out.println(input.substring(5));
 
@@ -20,7 +24,8 @@ public class Main {
 
                 if (command.equals("echo")
                         || command.equals("exit")
-                        || command.equals("type")) {
+                        || command.equals("type")
+                        || command.equals("pwd")) {
 
                     System.out.println(command + " is a shell builtin");
 
