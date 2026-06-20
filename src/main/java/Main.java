@@ -6,6 +6,7 @@ import java.util.List;
 public class Main {
 
     private static File currentDirectory = new File(System.getProperty("user.dir"));
+    private static int nextJobNumber = 1;
 
     private static List<String> parseCommand(String input) {
         List<String> parts = new ArrayList<>();
@@ -80,6 +81,12 @@ public class Main {
             String input = scanner.nextLine();
 
             List<String> tokens = parseCommand(input);
+            boolean backgroundJob = false;
+
+            if (!tokens.isEmpty() && tokens.get(tokens.size() - 1).equals("&")) {
+                backgroundJob = true;
+                tokens.remove(tokens.size() - 1);
+            }
 
             if (tokens.isEmpty()) {
                 continue;
@@ -116,8 +123,8 @@ public class Main {
                     System.out.println("cd: " + path + ": No such file or directory");
                 }
 
-                } else if (command.equals("jobs")) {
-                    // empty implementation
+            } else if (command.equals("jobs")) {
+                // empty implementation
             } else if (command.equals("echo")) {
 
                 int stdoutRedirect = -1;
@@ -213,11 +220,11 @@ public class Main {
                 String target = tokens.get(1);
 
                 if (target.equals("echo")
-        || target.equals("exit")
-        || target.equals("type")
-        || target.equals("pwd")
-        || target.equals("cd")
-        || target.equals("jobs")) {
+                        || target.equals("exit")
+                        || target.equals("type")
+                        || target.equals("pwd")
+                        || target.equals("cd")
+                        || target.equals("jobs")) {
 
                     System.out.println(target + " is a shell builtin");
 
@@ -334,7 +341,19 @@ public class Main {
                     pb.directory(currentDirectory);
 
                     Process process = pb.start();
-                    process.waitFor();
+
+                    if (backgroundJob) {
+
+                        System.out.println(
+                                "[" + nextJobNumber + "] "
+                                        + process.pid());
+
+                        nextJobNumber++;
+
+                    } else {
+
+                        process.waitFor();
+                    }
                 }
 
                 else {
