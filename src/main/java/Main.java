@@ -123,7 +123,10 @@ public class Main {
 
                 for (int i = 0; i < tokens.size(); i++) {
 
-                    if (tokens.get(i).equals(">") || tokens.get(i).equals("1>")) {
+                    if (tokens.get(i).equals(">")
+                            || tokens.get(i).equals("1>")
+                            || tokens.get(i).equals(">>")
+                            || tokens.get(i).equals("1>>")) {
                         stdoutRedirect = i;
                     }
 
@@ -157,9 +160,22 @@ public class Main {
 
                 if (stdoutRedirect != -1) {
 
-                    java.nio.file.Files.writeString(
-                            java.nio.file.Path.of(tokens.get(stdoutRedirect + 1)),
-                            output.toString() + System.lineSeparator());
+                    String op = tokens.get(stdoutRedirect);
+
+                    if (op.equals(">>") || op.equals("1>>")) {
+
+                        java.nio.file.Files.writeString(
+                                java.nio.file.Path.of(tokens.get(stdoutRedirect + 1)),
+                                output.toString() + System.lineSeparator(),
+                                java.nio.file.StandardOpenOption.CREATE,
+                                java.nio.file.StandardOpenOption.APPEND);
+
+                    } else {
+
+                        java.nio.file.Files.writeString(
+                                java.nio.file.Path.of(tokens.get(stdoutRedirect + 1)),
+                                output.toString() + System.lineSeparator());
+                    }
 
                 } else {
 
@@ -229,7 +245,10 @@ public class Main {
                     int stderrRedirect = -1;
                     for (int i = 0; i < tokens.size(); i++) {
 
-                        if (tokens.get(i).equals(">") || tokens.get(i).equals("1>")) {
+                        if (tokens.get(i).equals(">")
+                                || tokens.get(i).equals("1>")
+                                || tokens.get(i).equals(">>")
+                                || tokens.get(i).equals("1>>")) {
                             stdoutRedirect = i;
                         }
 
@@ -252,7 +271,22 @@ public class Main {
                     ProcessBuilder pb = new ProcessBuilder(commandTokens);
 
                     if (stdoutRedirect != -1) {
-                        pb.redirectOutput(new File(tokens.get(stdoutRedirect + 1)));
+
+                        String op = tokens.get(stdoutRedirect);
+
+                        if (op.equals(">>") || op.equals("1>>")) {
+
+                            pb.redirectOutput(
+                                    ProcessBuilder.Redirect.appendTo(
+                                            new File(tokens.get(stdoutRedirect + 1))));
+
+                        } else {
+
+                            pb.redirectOutput(
+                                    ProcessBuilder.Redirect.to(
+                                            new File(tokens.get(stdoutRedirect + 1))));
+                        }
+
                     } else {
                         pb.redirectOutput(ProcessBuilder.Redirect.INHERIT);
                     }
