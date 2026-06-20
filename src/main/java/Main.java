@@ -10,14 +10,27 @@ public class Main {
     private static List<String> parseCommand(String input) {
         List<String> parts = new ArrayList<>();
         StringBuilder current = new StringBuilder();
+
         boolean inSingleQuotes = false;
+        boolean inDoubleQuotes = false;
 
         for (int i = 0; i < input.length(); i++) {
             char ch = input.charAt(i);
 
-            if (ch == '\'') {
+            if (ch == '\'' && !inDoubleQuotes) {
                 inSingleQuotes = !inSingleQuotes;
-            } else if (Character.isWhitespace(ch) && !inSingleQuotes) {
+                continue;
+            }
+
+            if (ch == '"' && !inSingleQuotes) {
+                inDoubleQuotes = !inDoubleQuotes;
+                continue;
+            }
+
+            if (Character.isWhitespace(ch)
+                    && !inSingleQuotes
+                    && !inDoubleQuotes) {
+
                 if (current.length() > 0) {
                     parts.add(current.toString());
                     current.setLength(0);
