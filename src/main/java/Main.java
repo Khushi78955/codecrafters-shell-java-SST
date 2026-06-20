@@ -130,7 +130,8 @@ public class Main {
                         stdoutRedirect = i;
                     }
 
-                    if (tokens.get(i).equals("2>")) {
+                    if (tokens.get(i).equals("2>")
+                            || tokens.get(i).equals("2>>")) {
                         stderrRedirect = i;
                     }
                 }
@@ -184,9 +185,22 @@ public class Main {
 
                 if (stderrRedirect != -1) {
 
-                    java.nio.file.Files.writeString(
-                            java.nio.file.Path.of(tokens.get(stderrRedirect + 1)),
-                            "");
+                    String op = tokens.get(stderrRedirect);
+
+                    if (op.equals("2>>")) {
+
+                        java.nio.file.Files.writeString(
+                                java.nio.file.Path.of(tokens.get(stderrRedirect + 1)),
+                                "",
+                                java.nio.file.StandardOpenOption.CREATE,
+                                java.nio.file.StandardOpenOption.APPEND);
+
+                    } else {
+
+                        java.nio.file.Files.writeString(
+                                java.nio.file.Path.of(tokens.get(stderrRedirect + 1)),
+                                "");
+                    }
                 }
 
             } else if (command.equals("type")) {
@@ -252,7 +266,8 @@ public class Main {
                             stdoutRedirect = i;
                         }
 
-                        if (tokens.get(i).equals("2>")) {
+                        if (tokens.get(i).equals("2>")
+                                || tokens.get(i).equals("2>>")) {
                             stderrRedirect = i;
                         }
                     }
@@ -292,8 +307,24 @@ public class Main {
                     }
 
                     if (stderrRedirect != -1) {
-                        pb.redirectError(new File(tokens.get(stderrRedirect + 1)));
+
+                        String op = tokens.get(stderrRedirect);
+
+                        if (op.equals("2>>")) {
+
+                            pb.redirectError(
+                                    ProcessBuilder.Redirect.appendTo(
+                                            new File(tokens.get(stderrRedirect + 1))));
+
+                        } else {
+
+                            pb.redirectError(
+                                    ProcessBuilder.Redirect.to(
+                                            new File(tokens.get(stderrRedirect + 1))));
+                        }
+
                     } else {
+
                         pb.redirectError(ProcessBuilder.Redirect.INHERIT);
                     }
 
