@@ -17,6 +17,14 @@ public class Main {
         for (int i = 0; i < input.length(); i++) {
             char ch = input.charAt(i);
 
+            if (!inSingleQuotes && !inDoubleQuotes && ch == '\\') {
+                if (i + 1 < input.length()) {
+                    current.append(input.charAt(i + 1));
+                    i++;
+                }
+                continue;
+            }
+
             if (ch == '\'' && !inDoubleQuotes) {
                 inSingleQuotes = !inSingleQuotes;
                 continue;
@@ -96,7 +104,9 @@ public class Main {
                 StringBuilder output = new StringBuilder();
 
                 for (int i = 1; i < tokens.size(); i++) {
-                    if (i > 1) output.append(" ");
+                    if (i > 1) {
+                        output.append(" ");
+                    }
                     output.append(tokens.get(i));
                 }
 
