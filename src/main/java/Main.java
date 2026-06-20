@@ -17,6 +17,22 @@ public class Main {
         for (int i = 0; i < input.length(); i++) {
             char ch = input.charAt(i);
 
+            if (inDoubleQuotes && ch == '\\') {
+                if (i + 1 < input.length()) {
+                    char next = input.charAt(i + 1);
+
+                    if (next == '"' || next == '\\') {
+                        current.append(next);
+                        i++;
+                    } else {
+                        current.append('\\');
+                        current.append(next);
+                        i++;
+                    }
+                    continue;
+                }
+            }
+
             if (!inSingleQuotes && !inDoubleQuotes && ch == '\\') {
                 if (i + 1 < input.length()) {
                     current.append(input.charAt(i + 1));
