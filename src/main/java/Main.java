@@ -118,34 +118,60 @@ public class Main {
 
             } else if (command.equals("echo")) {
 
-    int redirectIndex = -1;
+                int stdoutRedirect = -1;
+                int stderrRedirect = -1;
 
-    for (int i = 0; i < tokens.size(); i++) {
-        if (tokens.get(i).equals(">") || tokens.get(i).equals("1>")) {
-            redirectIndex = i;
-            break;
-        }
-    }
+                for (int i = 0; i < tokens.size(); i++) {
 
-    StringBuilder output = new StringBuilder();
+                    if (tokens.get(i).equals(">") || tokens.get(i).equals("1>")) {
+                        stdoutRedirect = i;
+                    }
 
-    int end = (redirectIndex == -1) ? tokens.size() : redirectIndex;
+                    if (tokens.get(i).equals("2>")) {
+                        stderrRedirect = i;
+                    }
+                }
 
-    for (int i = 1; i < end; i++) {
-        if (i > 1) {
-            output.append(" ");
-        }
-        output.append(tokens.get(i));
-    }
+                StringBuilder output = new StringBuilder();
 
-    if (redirectIndex != -1) {
-        java.nio.file.Files.writeString(
-                java.nio.file.Path.of(tokens.get(redirectIndex + 1)),
-                output.toString() + System.lineSeparator()
-        );
-    } else {
-        System.out.println(output);
-    }
+                int end = tokens.size();
+
+                if (stdoutRedirect != -1) {
+
+                    end = Math.min(end, stdoutRedirect);
+
+                }
+
+                if (stderrRedirect != -1) {
+
+                    end = Math.min(end, stderrRedirect);
+
+                }
+
+                for (int i = 1; i < end; i++) {
+                    if (i > 1) {
+                        output.append(" ");
+                    }
+                    output.append(tokens.get(i));
+                }
+
+                if (stdoutRedirect != -1) {
+
+                    java.nio.file.Files.writeString(
+                            java.nio.file.Path.of(tokens.get(stdoutRedirect + 1)),
+                            output.toString() + System.lineSeparator());
+
+                } else {
+
+                    System.out.println(output);
+                }
+
+                if (stderrRedirect != -1) {
+
+                    java.nio.file.Files.writeString(
+                            java.nio.file.Path.of(tokens.get(stderrRedirect + 1)),
+                            "");
+                }
 
             } else if (command.equals("type")) {
                 if (tokens.size() < 2) {
@@ -199,46 +225,51 @@ public class Main {
                 }
 
                 if (executable != null) {
-
-                    int redirectIndex = -1;
-
+                    int stdoutRedirect = -1;
+                    int stderrRedirect = -1;
                     for (int i = 0; i < tokens.size(); i++) {
+
                         if (tokens.get(i).equals(">") || tokens.get(i).equals("1>")) {
-                            redirectIndex = i;
-                            break;
+                            stdoutRedirect = i;
+                        }
+
+                        if (tokens.get(i).equals("2>")) {
+                            stderrRedirect = i;
                         }
                     }
 
-                    ProcessBuilder pb;
+                    int cutIndex = tokens.size();
 
-                    if (redirectIndex != -1) {
+                    if (stdoutRedirect != -1) {
+                        cutIndex = Math.min(cutIndex, stdoutRedirect);
+                    }
 
-                        String outputFile = tokens.get(redirectIndex + 1);
+                    if (stderrRedirect != -1) {
+                        cutIndex = Math.min(cutIndex, stderrRedirect);
+                    }
 
-                        List<String> commandTokens =
-                                new ArrayList<>(tokens.subList(0, redirectIndex));
+                    List<String> commandTokens = new ArrayList<>(tokens.subList(0, cutIndex));
+                    ProcessBuilder pb = new ProcessBuilder(commandTokens);
 
-                        pb = new ProcessBuilder(commandTokens);
-                        pb.redirectOutput(new File(outputFile));
-
+                    if (stdoutRedirect != -1) {
+                        pb.redirectOutput(new File(tokens.get(stdoutRedirect + 1)));
                     } else {
-                        pb = new ProcessBuilder(tokens);
-                        pb.inheritIO();
+                        pb.redirectOutput(ProcessBuilder.Redirect.INHERIT);
+                    }
+
+                    if (stderrRedirect != -1) {
+                        pb.redirectError(new File(tokens.get(stderrRedirect + 1)));
+                    } else {
+                        pb.redirectError(ProcessBuilder.Redirect.INHERIT);
                     }
 
                     pb.directory(currentDirectory);
 
                     Process process = pb.start();
-
-                    if (redirectIndex != -1) {
-                        process.getErrorStream().transferTo(System.err);
-                    }
-
                     process.waitFor();
                 }
 
-                            
-                 else {
+                else {
                     System.out.println(input + ": command not found");
                 }
             }
