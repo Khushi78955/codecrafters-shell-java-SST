@@ -24,7 +24,9 @@ public class Main {
 
                 File dir;
 
-                if (path.startsWith("/")) {
+                if (path.equals("~")) {
+                    dir = new File(System.getenv("HOME"));
+                } else if (path.startsWith("/")) {
                     dir = new File(path);
                 } else {
                     dir = new File(currentDirectory, path);
