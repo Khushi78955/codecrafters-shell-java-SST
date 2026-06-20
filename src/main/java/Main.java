@@ -3,6 +3,9 @@ import java.io.File;
 import java.nio.file.Paths;
 
 public class Main {
+
+    private static File currentDirectory = new File(System.getProperty("user.dir"));
+
     public static void main(String[] args) throws Exception {
         Scanner scanner = new Scanner(System.in);
 
@@ -13,8 +16,20 @@ public class Main {
 
             if (input.equals("exit")) {
                 break;
+
             } else if (input.equals("pwd")) {
-                System.out.println(Paths.get("").toAbsolutePath().normalize());
+                System.out.println(currentDirectory.getAbsolutePath());
+
+            } else if (input.startsWith("cd ")) {
+                String path = input.substring(3);
+
+                File dir = new File(path);
+
+                if (dir.exists() && dir.isDirectory()) {
+                    currentDirectory = dir;
+                } else {
+                    System.out.println("cd: " + path + ": No such file or directory");
+                }
 
             } else if (input.startsWith("echo ")) {
                 System.out.println(input.substring(5));
@@ -25,7 +40,8 @@ public class Main {
                 if (command.equals("echo")
                         || command.equals("exit")
                         || command.equals("type")
-                        || command.equals("pwd")) {
+                        || command.equals("pwd")
+                        || command.equals("cd")) {
 
                     System.out.println(command + " is a shell builtin");
 
@@ -70,6 +86,7 @@ public class Main {
 
                 if (executable != null) {
                     ProcessBuilder pb = new ProcessBuilder(parts);
+                    pb.directory(currentDirectory);
                     pb.inheritIO();
 
                     Process process = pb.start();
