@@ -339,6 +339,11 @@ public class Main {
                     }
 
                     pb.directory(currentDirectory);
+                    if (backgroundJob) {
+
+                        pb.inheritIO();
+
+                    }
 
                     Process process = pb.start();
 
