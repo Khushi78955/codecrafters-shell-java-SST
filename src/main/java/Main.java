@@ -116,6 +116,8 @@ public class Main {
                     System.out.println("cd: " + path + ": No such file or directory");
                 }
 
+                } else if (command.equals("jobs")) {
+                    // empty implementation
             } else if (command.equals("echo")) {
 
                 int stdoutRedirect = -1;
@@ -211,10 +213,11 @@ public class Main {
                 String target = tokens.get(1);
 
                 if (target.equals("echo")
-                        || target.equals("exit")
-                        || target.equals("type")
-                        || target.equals("pwd")
-                        || target.equals("cd")) {
+        || target.equals("exit")
+        || target.equals("type")
+        || target.equals("pwd")
+        || target.equals("cd")
+        || target.equals("jobs")) {
 
                     System.out.println(target + " is a shell builtin");
 
