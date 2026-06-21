@@ -141,18 +141,33 @@ public class Main {
 
             } else if (command.equals("jobs")) {
 
-                for (Job job : jobs) {
+    int lastIndex = jobs.size() - 1;
+    int secondLastIndex = jobs.size() - 2;
 
-                    if (job.process.isAlive()) {
+    for (int i = 0; i < jobs.size(); i++) {
 
-                        System.out.printf(
-                                "[%d]+  %-24s%s%n",
-                                job.jobNumber,
-                                "Running",
-                                job.command);
-                    }
-                }
-            } else if (command.equals("echo")) {
+        Job job = jobs.get(i);
+
+        if (!job.process.isAlive()) {
+            continue;
+        }
+
+        char marker = ' ';
+
+        if (i == lastIndex) {
+            marker = '+';
+        } else if (i == secondLastIndex) {
+            marker = '-';
+        }
+
+        System.out.printf(
+                "[%d]%c  %-24s%s%n",
+                job.jobNumber,
+                marker,
+                "Running",
+                job.command);
+    }
+} else if (command.equals("echo")) {
 
                 int stdoutRedirect = -1;
                 int stderrRedirect = -1;
