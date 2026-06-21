@@ -163,95 +163,29 @@ public class Main {
             String input = scanner.nextLine();
             if (input.contains("|")) {
 
-                String[] parts = input.split("\\|", 2);
+                String[] parts = input.split("\\|");
+                List<String> lastCommand =
+        parseCommand(parts[parts.length - 1].trim());
+                List<ProcessBuilder> builders = new ArrayList<>();
 
-                List<String> leftCommand = parseCommand(parts[0].trim());
-                List<String> rightCommand = parseCommand(parts[1].trim());
-                String leftCmd = leftCommand.get(0);
+                for (String part : parts) {
 
-                String rightCmd = rightCommand.get(0);
+                    List<String> cmd = parseCommand(part.trim());
 
-                boolean leftBuiltin = leftCmd.equals("echo") ||
-                        leftCmd.equals("type");
+                    ProcessBuilder pb = new ProcessBuilder(cmd);
+                    pb.directory(currentDirectory);
 
-                boolean rightBuiltin = rightCmd.equals("echo") ||
-                        rightCmd.equals("type");
+                    builders.add(pb);
+                }
 
-                if (leftBuiltin && rightCmd.equals("wc")) {
-                    StringBuilder output = new StringBuilder();
+                builders.get(builders.size() - 1)
+                        .redirectOutput(ProcessBuilder.Redirect.INHERIT);
 
-                    for (int i = 1; i < leftCommand.size(); i++) {
-                        if (i > 1) {
-                            output.append(" ");
-                        }
-                        output.append(leftCommand.get(i));
-                    }
+                List<Process> pipeline = ProcessBuilder.startPipeline(builders);
 
-                    ProcessBuilder pb = new ProcessBuilder("wc");
-
-                    pb.redirectOutput(ProcessBuilder.Redirect.INHERIT);
-
-                    Process p = pb.start();
-
-                    p.getOutputStream().write(
-                            (output.toString() + System.lineSeparator()).getBytes());
-
-                    p.getOutputStream().close();
-
+                for (Process p : pipeline) {
                     p.waitFor();
-
-                    continue;
                 }
-
-                if (rightCmd.equals("type")) {
-
-                    String target = rightCommand.get(1);
-
-                    if (target.equals("echo")
-                            || target.equals("exit")
-                            || target.equals("type")
-                            || target.equals("pwd")
-                            || target.equals("cd")
-                            || target.equals("jobs")) {
-
-                        System.out.println(target + " is a shell builtin");
-
-                    } else {
-
-                        String pathEnv = System.getenv("PATH");
-                        String[] paths = pathEnv.split(File.pathSeparator);
-
-                        boolean found = false;
-
-                        for (String path : paths) {
-                            File file = new File(path, target);
-
-                            if (file.exists() && file.canExecute()) {
-                                System.out.println(target + " is " + file.getAbsolutePath());
-                                found = true;
-                                break;
-                            }
-                        }
-
-                        if (!found) {
-                            System.out.println(target + ": not found");
-                        }
-                    }
-
-                    continue;
-                }
-                ProcessBuilder pb1 = new ProcessBuilder(leftCommand);
-                ProcessBuilder pb2 = new ProcessBuilder(rightCommand);
-                pb2.redirectOutput(ProcessBuilder.Redirect.INHERIT);
-
-                pb1.directory(currentDirectory);
-                pb2.directory(currentDirectory);
-
-                List<Process> pipeline = ProcessBuilder.startPipeline(
-                        List.of(pb1, pb2));
-
-                pipeline.get(0).waitFor();
-                pipeline.get(1).waitFor();
 
                 continue;
             }
