@@ -24,6 +24,58 @@ public class Main {
 
     private static List<Job> jobs = new ArrayList<>();
 
+    private static void reapJobs() {
+
+        List<Job> jobsToRemove = new ArrayList<>();
+
+        int lastIndex = jobs.size() - 1;
+        int secondLastIndex = jobs.size() - 2;
+
+        for (int i = 0; i < jobs.size(); i++) {
+
+            Job job = jobs.get(i);
+
+            boolean done = false;
+
+            try {
+                job.process.exitValue();
+                done = true;
+            } catch (IllegalThreadStateException e) {
+                done = false;
+            }
+
+            if (done) {
+
+                char marker = ' ';
+
+                if (i == lastIndex) {
+                    marker = '+';
+                } else if (i == secondLastIndex) {
+                    marker = '-';
+                }
+
+                String doneCommand = job.command;
+
+                if (doneCommand.endsWith(" &")) {
+                    doneCommand = doneCommand.substring(
+                            0,
+                            doneCommand.length() - 2);
+                }
+
+                System.out.printf(
+                        "[%d]%c  %-24s%s%n",
+                        job.jobNumber,
+                        marker,
+                        "Done",
+                        doneCommand);
+
+                jobsToRemove.add(job);
+            }
+        }
+
+        jobs.removeAll(jobsToRemove);
+    }
+
     private static List<String> parseCommand(String input) {
         List<String> parts = new ArrayList<>();
         StringBuilder current = new StringBuilder();
@@ -90,8 +142,8 @@ public class Main {
 
     public static void main(String[] args) throws Exception {
         Scanner scanner = new Scanner(System.in);
-
         while (true) {
+            reapJobs();
             System.out.print("$ ");
 
             String input = scanner.nextLine();
@@ -140,12 +192,10 @@ public class Main {
                 }
 
             } else if (command.equals("jobs")) {
-
                 List<Job> jobsToRemove = new ArrayList<>();
-List<Job> activeJobs = new ArrayList<>(jobs);
 
-int lastIndex = activeJobs.size() - 1;
-int secondLastIndex = activeJobs.size() - 2;
+                int lastIndex = jobs.size() - 1;
+                int secondLastIndex = jobs.size() - 2;
 
                 for (int i = 0; i < jobs.size(); i++) {
 
@@ -168,23 +218,12 @@ int secondLastIndex = activeJobs.size() - 2;
                         done = false;
                     }
 
-                    if (!done) {
-
-                        System.out.printf(
-                                "[%d]%c  %-24s%s%n",
-                                job.jobNumber,
-                                marker,
-                                "Running",
-                                job.command);
-
-                    } else {
+                    if (done) {
 
                         String doneCommand = job.command;
 
                         if (doneCommand.endsWith(" &")) {
-                            doneCommand = doneCommand.substring(
-                                    0,
-                                    doneCommand.length() - 2);
+                            doneCommand = doneCommand.substring(0, doneCommand.length() - 2);
                         }
 
                         System.out.printf(
@@ -195,12 +234,18 @@ int secondLastIndex = activeJobs.size() - 2;
                                 doneCommand);
 
                         jobsToRemove.add(job);
+
+                    } else {
+
+                        System.out.printf(
+                                "[%d]%c  %-24s%s%n",
+                                job.jobNumber,
+                                marker,
+                                "Running",
+                                job.command);
                     }
                 }
-
                 jobs.removeAll(jobsToRemove);
-                lastIndex = jobs.size() - 1;
-secondLastIndex = jobs.size() - 2;
 
             } else if (command.equals("echo")) {
 
