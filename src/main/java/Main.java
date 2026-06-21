@@ -141,54 +141,64 @@ public class Main {
 
             } else if (command.equals("jobs")) {
 
-                List<Job> jobsToRemove = new ArrayList<>();
+    List<Job> jobsToRemove = new ArrayList<>();
 
-                int lastIndex = jobs.size() - 1;
-                int secondLastIndex = jobs.size() - 2;
+    int lastIndex = jobs.size() - 1;
+    int secondLastIndex = jobs.size() - 2;
 
-                for (int i = 0; i < jobs.size(); i++) {
+    for (int i = 0; i < jobs.size(); i++) {
 
-                    Job job = jobs.get(i);
+        Job job = jobs.get(i);
 
-                    char marker = ' ';
+        char marker = ' ';
 
-                    if (i == lastIndex) {
-                        marker = '+';
-                    } else if (i == secondLastIndex) {
-                        marker = '-';
-                    }
+        if (i == lastIndex) {
+            marker = '+';
+        } else if (i == secondLastIndex) {
+            marker = '-';
+        }
 
-                    if (job.process.isAlive()) {
+        boolean done = false;
 
-                        System.out.printf(
-                                "[%d]%c  %-24s%s%n",
-                                job.jobNumber,
-                                marker,
-                                "Running",
-                                job.command);
+        try {
+            job.process.exitValue();
+            done = true;
+        } catch (IllegalThreadStateException e) {
+            done = false;
+        }
 
-                    } else {
+        if (!done) {
 
-                        String doneCommand = job.command;
+            System.out.printf(
+                    "[%d]%c  %-24s%s%n",
+                    job.jobNumber,
+                    marker,
+                    "Running",
+                    job.command);
 
-                        if (doneCommand.endsWith(" &")) {
-                            doneCommand = doneCommand.substring(
-                                    0,
-                                    doneCommand.length() - 2);
-                        }
+        } else {
 
-                        System.out.printf(
-                                "[%d]%c  %-24s%s%n",
-                                job.jobNumber,
-                                marker,
-                                "Done",
-                                doneCommand);
+            String doneCommand = job.command;
 
-                        jobsToRemove.add(job);
-                    }
-                }
+            if (doneCommand.endsWith(" &")) {
+                doneCommand =
+                        doneCommand.substring(
+                                0,
+                                doneCommand.length() - 2);
+            }
 
-                jobs.removeAll(jobsToRemove);
+            System.out.printf(
+                    "[%d]%c  %-24s%s%n",
+                    job.jobNumber,
+                    marker,
+                    "Done",
+                    doneCommand);
+
+            jobsToRemove.add(job);
+        }
+    }
+
+    jobs.removeAll(jobsToRemove);
 
             } else if (command.equals("echo")) {
 
