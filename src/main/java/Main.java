@@ -141,33 +141,56 @@ public class Main {
 
             } else if (command.equals("jobs")) {
 
-    int lastIndex = jobs.size() - 1;
-    int secondLastIndex = jobs.size() - 2;
+                List<Job> jobsToRemove = new ArrayList<>();
 
-    for (int i = 0; i < jobs.size(); i++) {
+                int lastIndex = jobs.size() - 1;
+                int secondLastIndex = jobs.size() - 2;
 
-        Job job = jobs.get(i);
+                for (int i = 0; i < jobs.size(); i++) {
 
-        if (!job.process.isAlive()) {
-            continue;
-        }
+                    Job job = jobs.get(i);
 
-        char marker = ' ';
+                    char marker = ' ';
 
-        if (i == lastIndex) {
-            marker = '+';
-        } else if (i == secondLastIndex) {
-            marker = '-';
-        }
+                    if (i == lastIndex) {
+                        marker = '+';
+                    } else if (i == secondLastIndex) {
+                        marker = '-';
+                    }
 
-        System.out.printf(
-                "[%d]%c  %-24s%s%n",
-                job.jobNumber,
-                marker,
-                "Running",
-                job.command);
-    }
-} else if (command.equals("echo")) {
+                    if (job.process.isAlive()) {
+
+                        System.out.printf(
+                                "[%d]%c  %-24s%s%n",
+                                job.jobNumber,
+                                marker,
+                                "Running",
+                                job.command);
+
+                    } else {
+
+                        String doneCommand = job.command;
+
+                        if (doneCommand.endsWith(" &")) {
+                            doneCommand = doneCommand.substring(
+                                    0,
+                                    doneCommand.length() - 2);
+                        }
+
+                        System.out.printf(
+                                "[%d]%c  %-24s%s%n",
+                                job.jobNumber,
+                                marker,
+                                "Done",
+                                doneCommand);
+
+                        jobsToRemove.add(job);
+                    }
+                }
+
+                jobs.removeAll(jobsToRemove);
+
+            } else if (command.equals("echo")) {
 
                 int stdoutRedirect = -1;
                 int stderrRedirect = -1;
