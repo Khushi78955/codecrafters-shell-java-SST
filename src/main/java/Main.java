@@ -164,8 +164,23 @@ public class Main {
             if (input.contains("|")) {
 
                 String[] parts = input.split("\\|");
-                List<String> lastCommand =
-        parseCommand(parts[parts.length - 1].trim());
+                List<String> lastCommand = parseCommand(parts[parts.length - 1].trim());
+                String lastCmd = lastCommand.get(0);
+                if (lastCmd.equals("type")) {
+                    String target = lastCommand.get(1);
+                    if (target.equals("echo")
+                            || target.equals("exit")
+                            || target.equals("type")
+                            || target.equals("pwd")
+                            || target.equals("cd")
+                            || target.equals("jobs")) {
+
+                        System.out.println(target + " is a shell builtin");
+                        continue;
+                    }
+
+                }
+
                 List<ProcessBuilder> builders = new ArrayList<>();
 
                 for (String part : parts) {
