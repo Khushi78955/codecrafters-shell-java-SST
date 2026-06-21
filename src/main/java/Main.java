@@ -6,7 +6,21 @@ import java.util.List;
 public class Main {
 
     private static File currentDirectory = new File(System.getProperty("user.dir"));
-    private static int nextJobNumber = 1;
+
+    private static int getNextJobNumber() {
+
+        if (jobs.isEmpty()) {
+            return 1;
+        }
+
+        int max = 0;
+
+        for (Job job : jobs) {
+            max = Math.max(max, job.jobNumber);
+        }
+
+        return max + 1;
+    }
 
     private static class Job {
         int jobNumber;
@@ -471,16 +485,16 @@ public class Main {
 
                     if (backgroundJob) {
 
-                        System.out.println("[" + nextJobNumber + "] " + process.pid());
+                        int jobNumber = getNextJobNumber();
+
+                        System.out.println("[" + jobNumber + "] " + process.pid());
 
                         jobs.add(
                                 new Job(
-                                        nextJobNumber,
+                                        jobNumber,
                                         process.pid(),
                                         input,
                                         process));
-
-                        nextJobNumber++;
 
                     } else {
 
