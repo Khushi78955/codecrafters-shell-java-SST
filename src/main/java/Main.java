@@ -161,7 +161,28 @@ public class Main {
             System.out.print("$ ");
 
             String input = scanner.nextLine();
+            if (input.contains("|")) {
 
+                String[] parts = input.split("\\|", 2);
+
+                List<String> leftCommand = parseCommand(parts[0].trim());
+                List<String> rightCommand = parseCommand(parts[1].trim());
+
+                ProcessBuilder pb1 = new ProcessBuilder(leftCommand);
+                ProcessBuilder pb2 = new ProcessBuilder(rightCommand);
+pb2.redirectOutput(ProcessBuilder.Redirect.INHERIT);
+
+                pb1.directory(currentDirectory);
+                pb2.directory(currentDirectory);
+
+                List<Process> pipeline = ProcessBuilder.startPipeline(
+                        List.of(pb1, pb2));
+
+                pipeline.get(0).waitFor();
+                pipeline.get(1).waitFor();
+
+                continue;
+            }
             List<String> tokens = parseCommand(input);
             boolean backgroundJob = false;
 
