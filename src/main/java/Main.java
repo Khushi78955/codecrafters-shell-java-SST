@@ -167,7 +167,79 @@ public class Main {
 
                 List<String> leftCommand = parseCommand(parts[0].trim());
                 List<String> rightCommand = parseCommand(parts[1].trim());
+                String leftCmd = leftCommand.get(0);
 
+                String rightCmd = rightCommand.get(0);
+
+                boolean leftBuiltin = leftCmd.equals("echo") ||
+                        leftCmd.equals("type");
+
+                boolean rightBuiltin = rightCmd.equals("echo") ||
+                        rightCmd.equals("type");
+
+                if (leftBuiltin && rightCmd.equals("wc")) {
+                    StringBuilder output = new StringBuilder();
+
+                    for (int i = 1; i < leftCommand.size(); i++) {
+                        if (i > 1) {
+                            output.append(" ");
+                        }
+                        output.append(leftCommand.get(i));
+                    }
+
+                    ProcessBuilder pb = new ProcessBuilder("wc");
+
+                    pb.redirectOutput(ProcessBuilder.Redirect.INHERIT);
+
+                    Process p = pb.start();
+
+                    p.getOutputStream().write(
+                            (output.toString() + System.lineSeparator()).getBytes());
+
+                    p.getOutputStream().close();
+
+                    p.waitFor();
+
+                    continue;
+                }
+
+                if (rightCmd.equals("type")) {
+
+                    String target = rightCommand.get(1);
+
+                    if (target.equals("echo")
+                            || target.equals("exit")
+                            || target.equals("type")
+                            || target.equals("pwd")
+                            || target.equals("cd")
+                            || target.equals("jobs")) {
+
+                        System.out.println(target + " is a shell builtin");
+
+                    } else {
+
+                        String pathEnv = System.getenv("PATH");
+                        String[] paths = pathEnv.split(File.pathSeparator);
+
+                        boolean found = false;
+
+                        for (String path : paths) {
+                            File file = new File(path, target);
+
+                            if (file.exists() && file.canExecute()) {
+                                System.out.println(target + " is " + file.getAbsolutePath());
+                                found = true;
+                                break;
+                            }
+                        }
+
+                        if (!found) {
+                            System.out.println(target + ": not found");
+                        }
+                    }
+
+                    continue;
+                }
                 ProcessBuilder pb1 = new ProcessBuilder(leftCommand);
                 ProcessBuilder pb2 = new ProcessBuilder(rightCommand);
                 pb2.redirectOutput(ProcessBuilder.Redirect.INHERIT);
