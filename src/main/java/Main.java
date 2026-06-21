@@ -170,7 +170,7 @@ public class Main {
 
                 ProcessBuilder pb1 = new ProcessBuilder(leftCommand);
                 ProcessBuilder pb2 = new ProcessBuilder(rightCommand);
-pb2.redirectOutput(ProcessBuilder.Redirect.INHERIT);
+                pb2.redirectOutput(ProcessBuilder.Redirect.INHERIT);
 
                 pb1.directory(currentDirectory);
                 pb2.directory(currentDirectory);
